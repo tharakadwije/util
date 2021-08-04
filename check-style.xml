@@ -1,0 +1,47 @@
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+<!--Same as checkstyle-level2 in eroad-pom 5.0.0.1-SNAPSHOT-->
+<module name="Checker">
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <module name="TreeWalker">
+        <property name="tabWidth" value="4"/>
+        <module name="NeedBraces"/>
+        <module name="LeftCurly">
+            <property name="option" value="eol"/>
+        </module>
+        <module name="RightCurly">
+            <property name="option" value="same"/>
+        </module>
+
+        <!-- See http://checkstyle.sf.net/config_import.html -->
+        <module name="IllegalImport">
+            <property name="illegalPkgs" value="org.apache.commons.collections"/>
+            <property name="illegalPkgs" value="org.joda.time"/>
+        </module>
+        <module name="RedundantImport"/>
+        <module name="UnusedImports"/>
+
+        <module name="MethodParamPad"/>
+        <module name="NoWhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="ParenPad"/>
+        <module name="TypecastParenPad"/>
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
+        <module name="DeclarationOrder"/>
+        <module name="UnnecessaryParentheses"/>
+
+        <module name="Regexp">
+            <property name="format" value="System\.(out|err)"/>
+            <property name="illegalPattern" value="true"/>
+        </module>
+    </module>
+
+    <!-- Checks properties file for a duplicated properties. -->
+    <!-- See http://checkstyle.sourceforge.net/config_misc.html#UniqueProperties -->
+    <module name="UniqueProperties"/>
+</module>
