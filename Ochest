@@ -1,0 +1,77 @@
+
+package com.psa.pc.fw.ac.bizfn;
+
+import com.psa.appfw.exception.SystemException;
+import com.psa.appfw.exception.ValidationException;
+import com.psa.pc.fw.ac.ctx.PCContext;
+import com.psa.pc.fw.ac.util.ExceptionUtil;
+import com.psa.pc.fw.ac.util.ObjectUtil;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+public class Orchestrator {
+    
+    public final static void execute(PCContext ctx, GenericBusinessFunction... funcs) {
+        execute(ctx, TransactionType.NOT, ErrorHandlingType.GROUP, funcs);
+    }
+    
+    public final static void execute(PCContext ctx, TransactionType tranType, ErrorHandlingType errType, GenericBusinessFunction... funcs) {
+        if(tranType == null) {
+            tranType = TransactionType.NOT;
+        }
+        if(errType == null) {
+            errType = ErrorHandlingType.GROUP;
+        }
+        if(!ObjectUtil.isNullOrEmpty(funcs)) {
+            try {
+                List<SystemException> lst = new ArrayList<>();
+                for(GenericBusinessFunction func : funcs) {
+                    if(errType.isGroup()) {
+                        try {
+                            func.apply();
+                        } catch (ValidationException appEx) {
+                            lst.add(appEx);
+                        } catch (SystemException sysEx) {
+                            lst.add(sysEx);
+                        }
+                    } else {
+                        func.apply();
+                    }
+                }
+                if(!ObjectUtil.isNullOrEmpty(lst)) {
+                    throw ExceptionUtil.newMulSysEx(ctx.getModule(), lst);
+                }
+            } catch (Exception ex) {
+                if(tranType.isSupport() && (ctx.getSubModule() != null && (ctx.getSubModule().isWS() || ctx.getSubModule().isFE()))) {
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                }
+                throw ex;
+            }
+        }
+    }
+    
+    /**
+     * Support GROUP mode without transaction control only
+     * If group1 fail, then the gourp2 is not executed; But all functions in the one group can be executed once.
+     * 
+     * @param ctx
+     * @param funcGroup 
+     */
+    public final static void executeGroup(PCContext ctx, List<GenericBusinessFunction[]> funcGroup) {
+        if (!ObjectUtil.isNullOrEmpty(funcGroup)) {
+            List<SystemException> lst = new ArrayList<>();
+            for (GenericBusinessFunction[] func : funcGroup) {
+                try {
+                    execute(ctx, func);
+                } catch (SystemException ex) {
+                    lst.add(ex);
+                    break;
+                }
+            }
+            if(!ObjectUtil.isNullOrEmpty(lst)) {
+                throw ExceptionUtil.newMulSysEx(ctx.getModule(), lst);
+            }
+        }
+    }
+}
