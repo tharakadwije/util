@@ -19,3 +19,20 @@
         }
         return rsObj;
     }
+
+
+    public static final Class deriveAbstractionLevel(String level) {
+        Class cls;
+        
+        if("summary".equalsIgnoreCase(level)) {
+            cls = DomainJsonView.Summary.class;
+        } else if("detail".equalsIgnoreCase(level)) {
+            cls = DomainJsonView.Detail.class;
+        } else if("basic".equalsIgnoreCase(level) || StringUtil.isNullOrBlank(level)) {
+            cls = DomainJsonView.Basic.class;
+        } else {
+            throw new IllegalArgumentException("Invalid service access.");
+        }
+        
+        return cls;
+    }
