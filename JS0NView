@@ -1,0 +1,21 @@
+  private Object standardDate(Object rsObj, Class viewCls) {
+        if(!ObjectUtil.isNullOrEmpty(rsObj)) {
+            String pkg = rsObj.getClass().getPackage().getName();
+            if(rsObj instanceof Collection<?> || rsObj instanceof List) {
+                String json = viewCls == null ? JsonUtil.toJson(rsObj) : JsonUtil.toJsonWithView(rsObj, viewCls);
+                Class<?> cls = rsObj instanceof List ? List.class : rsObj.getClass();
+                rsObj = JsonUtil.toObject(json, cls);
+            } else if(pkg.startsWith("com.psa.pc.") && rsObj instanceof Serializable) {
+                String json = viewCls == null ? JsonUtil.toJson(rsObj) : JsonUtil.toJsonWithView(rsObj, viewCls);
+                rsObj = JsonUtil.toObject(json, Map.class);
+            } else if(rsObj instanceof Map) {
+                rsObj = JsonUtil.toObject(JsonUtil.toJson(rsObj), Map.class);
+            } else if(rsObj instanceof java.util.Date) {
+                rsObj = DateUtil.dateToString((Date) rsObj);
+            }
+            logger.debug("Web Service Output: {}", JsonUtil.toJson(rsObj));
+        } else {
+            logger.info("Result is null or No output (void)");
+        }
+        return rsObj;
+    }
